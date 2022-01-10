@@ -8,16 +8,17 @@ local mq = require('mq')
 
 local debug = true
 local function output(msg) print('\a-t[Monk Assist] '..msg) end
-local trigger = 0
+local monk = 0
+
 local terminate = false
 
 -- bind handler
 local function bind_monk(action)
     if action == 'on' then
-        trigger = 1
+        monk = 1
         output('\ayMonk Assist: on')
     elseif action == 'off' then
-        trigger = 0
+        monk = 0
         output('\ayMonk Assist: off')
     elseif action == nil then
         output('\ar no command given... try again.')
@@ -27,7 +28,18 @@ local function bind_monk(action)
 end
 
 local function checkBuffs()
---[[ /if (${Spell[Familiar: Emperor Ganak].Stacks} && !${Me.Buff[Familiar: Emperor Ganak].ID} && !${Me.Moving} && !${Me.Invis}) /useitem "Emperor Ganak Familiar"
+--[[
+for int x til eof in buff section
+
+--]] 
+--[[ 
+
+Look at ini to determine which buffs to check under [Buffs] 
+
+BuffName:
+BuffType: item, disc, spell
+
+/if (${Spell[Familiar: Emperor Ganak].Stacks} && !${Me.Buff[Familiar: Emperor Ganak].ID} && !${Me.Moving} && !${Me.Invis}) /useitem "Emperor Ganak Familiar"
 /if (!${Me.Aura[Master's Aura].ID} && !${Me.Invis} && !${Me.Moving} && ${Me.CombatAbilityReady[master's aura]} && !${Me.Invis}) /disc master's aura
 /if (!${Me.Buff[Revival Sickness].ID} && !${Me.Buff[Resurrection Sickness].ID} && ${Me.PctEndurance}<21 && ${Me.CombatAbilityReady[Breather]}) /disc Breather
 /if (${Spell[Twitching Speed].Stacks} && !${Me.Buff[Twitching Speed].ID} && !${Me.Moving} && !${Me.Invis} && ${Me.Haste}<200) /casting 52123
@@ -55,13 +67,17 @@ local function outOfCombat()
 end
 
 local function inCombat()
-    output('\ar in Combat')
+  output('\ar in Combat')
+  while mq.TLO.Me.Combat() do
+    checkSpam() 
+    burnTrigger() 
+  end
 end
 
 
 local function main()
   while not terminate do
-    if trigger == 1 then
+    if monk == 1 then
         if mq.TLO.Me.Combat() then
             inCombat()
             terminate = true
